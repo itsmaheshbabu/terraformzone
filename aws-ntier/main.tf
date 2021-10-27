@@ -137,14 +137,23 @@ resource "aws_security_group_rule" "websgssh" {
     security_group_id = aws_security_group.websg.id
   
 }
+resource "aws_security_group_rule" "allow_all" {
+    type = "egress"
+    to_port = 0
+    protocol = "-1"
+    from_port = 0
+    cidr_blocks = ["0.0.0.0/0"]
+    security_group_id = aws_security_group.websg.id
+  
+}
 
 resource "aws_instance" "webserver" {
-    count = var.enable_vm ? 1: 0
     ami = "ami-04bde106886a53080"  # ami for ubuntu 18 in mumbai region
     instance_type = "t2.micro"
     associate_public_ip_address = true
     vpc_security_group_ids = [aws_security_group.websg.id]
     subnet_id = aws_subnet.subnets[0].id
+    key_name = "iampractise"
     tags = {
       "Name" = "webserver"
     }
@@ -154,6 +163,32 @@ resource "aws_instance" "webserver" {
       aws_route_table.publicrt,
       aws_security_group.websg
     ]
+
+}
+
+resource "null_resource" "forprovisioning" {
+    triggers = {
+      "order" = "aws_instance.webserver"
+    }
+    connection {
+      type ="ssh"
+      user = "ubuntu"
+      private_key = file("./iampractise.pem")
+      host = aws_instance.webserver.public_ip
+    }
+    provisioner "file" {
+        source = "./scripts/installapache.sh"
+        destination = "/home/ubuntu/installapache.sh"
+    
+    }
+    provisioner "remote-exec" {
+        inline = [
+          "sh /home/ubuntu/installapache.sh"
+        ]
+    
+    }
+
+   
 }
 
 

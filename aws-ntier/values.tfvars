@@ -4,4 +4,3 @@ ntier_region = "ap-south-1"
 ntier_subnet_Azs = [ "ap-south-1a", "ap-south-1a", "ap-south-1b", "ap-south-1a", "ap-south-1a", "ap-south-1b" ]
 web_subnet_indexes = [ 0,3]
 other_subnet_indexes = [1,2,4,5]
-enable_vm = false
